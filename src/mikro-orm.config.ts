@@ -2,13 +2,14 @@ import path from 'path';
 import { __prod__ } from "./constants";
 import { Post } from "./entities/Post";
 import {MikroORM} from '@mikro-orm/core'
+import { User } from './entities/User';
 
 export default {
     type: 'postgresql',
     dbName: "lireddit",
     user: "postgres",
     password: "1234",
-    entities: [Post],
+    entities: [Post, User],
     debug: !__prod__,    
     migrations: {
         path: path.join(__dirname, './migrations'), // path to the folder with migrations
