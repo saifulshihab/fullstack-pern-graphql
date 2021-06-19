@@ -8,7 +8,7 @@ export default {
     type: 'postgresql',
     dbName: "lireddit",
     user: "postgres",
-    password: "1234",
+    password: "4856",
     entities: [Post, User],
     debug: !__prod__,    
     migrations: {
