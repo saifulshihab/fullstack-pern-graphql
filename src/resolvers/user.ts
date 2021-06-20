@@ -11,6 +11,7 @@ import {
 import { MyContext } from 'src/types';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
+import {EntityManager} from '@mikro-orm/postgresql'
 
 @InputType()
 class UsernamePasswordInput {
@@ -53,12 +54,12 @@ export class UserResolver {
     @Arg('options') options: UsernamePasswordInput,
     @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
-    if (options.username.length < 5) {
+    if (options.username.length < 3) {
       return {
         errors: [
           {
             field: 'username',
-            message: 'Username must be 5 character!',
+            message: 'Username must be 3 character!',
           },
         ],
       };
@@ -73,13 +74,17 @@ export class UserResolver {
         ],
       };
     }
-    const hasfPassword = await argon2.hash(options.password);
-    const user = em.create(User, {
-      username: options.username,
-      password: hasfPassword,
-    });
+    const hashPassword = await argon2.hash(options.password);
+    let user;
     try {
-      await em.persistAndFlush(user);
+      const result = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert({
+        username: options.username,
+        password: hashPassword,
+        created_at: new Date(),
+        updated_at: new Date()
+      }).returning('*')
+
+      user = result[0]
     } catch (err) {
       if (err.code === '23505') {
         return {
@@ -110,7 +115,7 @@ export class UserResolver {
         errors: [
           {
             field: 'username',
-            message: "Username doesn't exist!",
+            message: 'Username doesn"t exist!',
           },
         ],
       };
@@ -121,7 +126,7 @@ export class UserResolver {
         errors: [
           {
             field: 'password',
-            message: 'Incorrect Password!',
+            message: 'Invalid password!',
           },
         ],
       };

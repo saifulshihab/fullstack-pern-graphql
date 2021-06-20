@@ -12,12 +12,13 @@ import session from 'express-session';
 import redis from 'redis';
 import connectRedis from 'connect-redis';
 import { MyContext } from './types';
+import cors from 'cors';
 
 declare module 'express-session' {
-    interface SessionData {
-        userId: any;
-    }
+  interface SessionData {
+    userId: any;
   }
+}
 
 const main = async () => {
   // db  migration & connection
@@ -25,6 +26,13 @@ const main = async () => {
   // await orm.getMigrator().up()
 
   const app = express();
+
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+      credentials: true,
+    })
+  );
 
   const redisStore = connectRedis(session);
   const redisClient = redis.createClient();
@@ -53,7 +61,7 @@ const main = async () => {
     context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
   });
 
-  apolloServer.applyMiddleware({ app });
+  apolloServer.applyMiddleware({ app, cors: false });
   app.listen(4000, () => {
     console.log('\nServer running on locahost:4000');
   });
