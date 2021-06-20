@@ -8,7 +8,7 @@ import { toErrorMap } from '../utils/toErrorMap';
 import {useRouter} from 'next/router'
 
 
-const Register: React.FC<{}> = ({}) => {
+const Login: React.FC<{}> = ({}) => {
 
   const [, login] = useLoginMutation()
   const router = useRouter()
@@ -59,4 +59,4 @@ const Register: React.FC<{}> = ({}) => {
   );
 };
 
-export default Register;
+export default Login;
