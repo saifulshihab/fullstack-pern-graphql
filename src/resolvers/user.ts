@@ -11,7 +11,8 @@ import {
 import { MyContext } from 'src/types';
 import { User } from '../entities/User';
 import argon2 from 'argon2';
-import {EntityManager} from '@mikro-orm/postgresql'
+import { EntityManager } from '@mikro-orm/postgresql';
+import { COKKIE_NAME } from '../constants';
 
 @InputType()
 class UsernamePasswordInput {
@@ -77,14 +78,18 @@ export class UserResolver {
     const hashPassword = await argon2.hash(options.password);
     let user;
     try {
-      const result = await (em as EntityManager).createQueryBuilder(User).getKnexQuery().insert({
-        username: options.username,
-        password: hashPassword,
-        created_at: new Date(),
-        updated_at: new Date()
-      }).returning('*')
+      const result = await (em as EntityManager)
+        .createQueryBuilder(User)
+        .getKnexQuery()
+        .insert({
+          username: options.username,
+          password: hashPassword,
+          created_at: new Date(),
+          updated_at: new Date(),
+        })
+        .returning('*');
 
-      user = result[0]
+      user = result[0];
     } catch (err) {
       if (err.code === '23505') {
         return {
@@ -135,5 +140,20 @@ export class UserResolver {
     req.session.userId = user.id;
 
     return { user };
+  }
+
+  @Mutation(() => Boolean)
+  logout(@Ctx() { req, res }: MyContext) {
+    return new Promise((resolve) => {
+      req.session.destroy((err) => {
+        if (err) {
+          resolve(false);
+          return;
+        }
+        // remove the cookie
+        res.clearCookie(COKKIE_NAME);
+        resolve(true);
+      });
+    });
   }
 }
