@@ -4,6 +4,7 @@ import NavLink from 'next/link';
 import { useLogoutMutation, useMeQuery } from '../generated/graphql';
 
 const Navbar = () => {
+  
   const [{ data }] = useMeQuery();
   const [{fetching: logoutFetching}, logout] =  useLogoutMutation()
 
@@ -37,6 +38,6 @@ const Navbar = () => {
       <Box ml='auto'>{body}</Box>
     </Flex>
   );
-};
+}; 
 
 export default Navbar;
