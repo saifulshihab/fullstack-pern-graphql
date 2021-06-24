@@ -9,7 +9,7 @@ import { HelloResolver } from './resolvers/hello';
 import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
 import session from 'express-session';
-import redis from 'redis';
+import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 import { MyContext } from './types';
 import cors from 'cors';
@@ -23,7 +23,8 @@ declare module 'express-session' {
 const main = async () => {
   // db  migration & connection
   const orm = await MikroORM.init(mikroOrm);
-  // await orm.getMigrator().up()
+
+  await orm.getMigrator().up();
 
   const app = express();
 
@@ -35,12 +36,13 @@ const main = async () => {
   );
 
   const redisStore = connectRedis(session);
-  const redisClient = redis.createClient();
+
+  const redis = new Redis();
 
   app.use(
     session({
       name: COKKIE_NAME,
-      store: new redisStore({ client: redisClient, disableTouch: true }),
+      store: new redisStore({ client: redis, disableTouch: true }),
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
         httpOnly: true,
@@ -58,7 +60,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
+    context: ({ req, res }): MyContext => ({ em: orm.em, req, res, redis }),
   });
 
   apolloServer.applyMiddleware({ app, cors: false });
