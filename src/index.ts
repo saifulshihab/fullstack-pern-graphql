@@ -1,7 +1,6 @@
 import 'reflect-metadata';
-import { MikroORM } from '@mikro-orm/core';
+import { createConnection } from 'typeorm';
 import { COKKIE_NAME, __prod__ } from './constants';
-import mikroOrm from './mikro-orm.config';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
@@ -13,6 +12,8 @@ import Redis from 'ioredis';
 import connectRedis from 'connect-redis';
 import { MyContext } from './types';
 import cors from 'cors';
+import { User } from './entities/User';
+import { Post } from './entities/Post';
 
 declare module 'express-session' {
   interface SessionData {
@@ -22,9 +23,15 @@ declare module 'express-session' {
 
 const main = async () => {
   // db  migration & connection
-  const orm = await MikroORM.init(mikroOrm);
-
-  await orm.getMigrator().up();
+  await createConnection({
+    type: 'postgres',
+    database: 'lireddit2',
+    username: 'postgres',
+    password: '4856',
+    synchronize: true,
+    logging: true,
+    entities: [User, Post],
+  });
 
   const app = express();
 
@@ -60,7 +67,7 @@ const main = async () => {
       resolvers: [HelloResolver, PostResolver, UserResolver],
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res, redis }),
+    context: ({ req, res }): MyContext => ({ req, res, redis }),
   });
 
   apolloServer.applyMiddleware({ app, cors: false });
