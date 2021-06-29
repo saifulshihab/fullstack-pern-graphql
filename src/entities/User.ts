@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   BaseEntity,
-} from 'typeorm';
-import { Field, ObjectType } from 'type-graphql';
+  OneToMany,
+} from "typeorm";
+import { Field, ObjectType } from "type-graphql";
+import { Post } from "./Post";
 
 @ObjectType()
 @Entity()
@@ -26,6 +28,9 @@ export class User extends BaseEntity {
   //   @Field()   not exposing
   @Column()
   password!: string;
+
+  @OneToMany(() => Post, (post) => post.creator)
+  posts: Post[];
 
   @Field()
   @CreateDateColumn()

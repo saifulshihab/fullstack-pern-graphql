@@ -6,20 +6,20 @@ import {
   Field,
   ObjectType,
   Query,
-} from 'type-graphql';
-import { MyContext } from 'src/types';
-import { User } from '../entities/User';
-import argon2 from 'argon2';
+} from "type-graphql";
+import { MyContext } from "src/types";
+import { User } from "../entities/User";
+import argon2 from "argon2";
 import {
   COKKIE_NAME,
   FORGET_PASSWORD_PREFIX,
   PROD_CLIENT_URL,
-} from '../constants';
-import { UsernamePasswordInput } from './UsernamePasswordInput';
-import { validateRegister } from '../utils/validateRegister';
-import { v4 } from 'uuid';
-import { sendMail } from '../utils/sendEmail';
-import { getConnection } from 'typeorm';
+} from "../constants";
+import { UsernamePasswordInput } from "./UsernamePasswordInput";
+import { validateRegister } from "../utils/validateRegister";
+import { v4 } from "uuid";
+import { sendMail } from "../utils/sendEmail";
+import { getConnection } from "typeorm";
 
 @ObjectType()
 class FieldError {
@@ -50,7 +50,7 @@ export class UserResolver {
 
   @Mutation(() => Boolean)
   async forgotPassword(
-    @Arg('email') email: string,
+    @Arg("email") email: string,
     @Ctx() { redis }: MyContext
   ) {
     const user = await User.findOne({ where: { email } });
@@ -64,7 +64,7 @@ export class UserResolver {
     await redis.set(
       FORGET_PASSWORD_PREFIX + token,
       user.id,
-      'ex',
+      "ex",
       1000 * 60 * 60 * 1 //   1 day expiration
     );
 
@@ -76,16 +76,16 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async changePassword(
-    @Arg('token') token: string,
-    @Arg('newPassword') newPassword: string,
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
     @Ctx() { redis, req }: MyContext
   ): Promise<UserResponse> {
     if (newPassword.length < 3) {
       return {
         errors: [
           {
-            field: 'newPassword',
-            message: 'Password must be 3 character!',
+            field: "newPassword",
+            message: "Password must be 3 character!",
           },
         ],
       };
@@ -99,8 +99,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'token',
-            message: 'Token expired!',
+            field: "token",
+            message: "Token expired!",
           },
         ],
       };
@@ -113,8 +113,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'token',
-            message: 'User does not exist!',
+            field: "token",
+            message: "User does not exist!",
           },
         ],
       };
@@ -137,7 +137,7 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async register(
-    @Arg('options') options: UsernamePasswordInput,
+    @Arg("options") options: UsernamePasswordInput,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const errors = validateRegister(options);
@@ -159,17 +159,17 @@ export class UserResolver {
           email: options.email,
           password: hashPassword,
         })
-        .returning('*')
+        .returning("*")
         .execute();
 
       user = result.raw[0];
     } catch (err) {
-      if (err.code === '23505') {
+      if (err.code === "23505") {
         return {
           errors: [
             {
-              field: 'username',
-              message: 'Username already taken!!',
+              field: "username",
+              message: "Username already taken!!",
             },
           ],
         };
@@ -184,12 +184,12 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg('usernameOrEmail') usernameOrEmail: string,
-    @Arg('password') password: string,
+    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("password") password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const user = await User.findOne(
-      usernameOrEmail.includes('@')
+      usernameOrEmail.includes("@")
         ? { where: { email: usernameOrEmail } }
         : { where: { username: usernameOrEmail } }
     );
@@ -197,7 +197,7 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'usernameOrEmail',
+            field: "usernameOrEmail",
             message: 'Username doesn"t exist!',
           },
         ],
@@ -208,8 +208,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'password',
-            message: 'Invalid password!',
+            field: "password",
+            message: "Invalid password!",
           },
         ],
       };
