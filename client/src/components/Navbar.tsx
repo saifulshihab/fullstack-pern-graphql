@@ -31,7 +31,7 @@ const Navbar = () => {
           onClick={() => logout()}
           variant="link"
         >
-          Logout
+          logout
         </Button>
       </Flex>
     );
@@ -47,7 +47,7 @@ const Navbar = () => {
       alignItems="center"
     >
       <Box fontWeight="extrabold" fontSize="3xl" textColor="white">
-        <NextLink href="/"> Lireddit</NextLink>
+        <NextLink href="/"> LiReddit</NextLink>
       </Box>
       <Box ml="auto">{body}</Box>
     </Flex>
