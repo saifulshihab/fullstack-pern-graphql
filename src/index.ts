@@ -15,6 +15,7 @@ import { MyContext } from "./types";
 import cors from "cors";
 import { User } from "./entities/User";
 import { Post } from "./entities/Post";
+import { Updoot } from "./entities/Updoot";
 
 declare module "express-session" {
   interface SessionData {
@@ -32,7 +33,7 @@ const main = async () => {
     synchronize: true,
     logging: true,
     migrations: [path.join(__dirname, "./migrations/*")],
-    entities: [User, Post],
+    entities: [User, Post, Updoot],
   });
 
   await conn.runMigrations();
