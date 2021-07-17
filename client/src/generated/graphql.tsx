@@ -92,6 +92,7 @@ export type Post = {
   title: Scalars['String'];
   text: Scalars['String'];
   points: Scalars['Float'];
+  voteStatus?: Maybe<Scalars['Int']>;
   creatorId: Scalars['String'];
   creator: User;
   createdAt: Scalars['String'];
@@ -144,6 +145,15 @@ export type UsernamePasswordInput = {
   password: Scalars['String'];
 };
 
+export type PostSnippetFragment = (
+  { __typename?: 'Post' }
+  & Pick<Post, 'id' | 'title' | 'textSnippet' | 'points' | 'voteStatus' | 'createdAt' | 'updatedAt'>
+  & { creator: (
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'username'>
+  ) }
+);
+
 export type RegulerErrorFragment = (
   { __typename?: 'FieldError' }
   & Pick<FieldError, 'field' | 'message'>
@@ -163,6 +173,17 @@ export type RegulerUserResponseFragment = (
     { __typename?: 'FieldError' }
     & RegulerErrorFragment
   )>> }
+);
+
+export type VoteMutationVariables = Exact<{
+  postId: Scalars['Int'];
+  value: Scalars['Int'];
+}>;
+
+
+export type VoteMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'vote'>
 );
 
 export type ChangePasswordMutationVariables = Exact<{
@@ -248,6 +269,23 @@ export type MeQuery = (
   )> }
 );
 
+export type PostQueryVariables = Exact<{
+  postId: Scalars['Int'];
+}>;
+
+
+export type PostQuery = (
+  { __typename?: 'Query' }
+  & { post?: Maybe<(
+    { __typename?: 'Post' }
+    & Pick<Post, 'id' | 'title' | 'text' | 'points' | 'voteStatus' | 'createdAt' | 'updatedAt'>
+    & { creator: (
+      { __typename?: 'User' }
+      & Pick<User, 'id' | 'username'>
+    ) }
+  )> }
+);
+
 export type PostsQueryVariables = Exact<{
   limit: Scalars['Int'];
   cursor?: Maybe<Scalars['String']>;
@@ -261,15 +299,26 @@ export type PostsQuery = (
     & Pick<PaginatedPosts, 'hasMore'>
     & { posts: Array<(
       { __typename?: 'Post' }
-      & Pick<Post, 'id' | 'title' | 'textSnippet' | 'points' | 'createdAt' | 'updatedAt'>
-      & { creator: (
-        { __typename?: 'User' }
-        & Pick<User, 'id' | 'username'>
-      ) }
+      & PostSnippetFragment
     )> }
   ) }
 );
 
+export const PostSnippetFragmentDoc = gql`
+    fragment PostSnippet on Post {
+  id
+  title
+  textSnippet
+  points
+  voteStatus
+  creator {
+    id
+    username
+  }
+  createdAt
+  updatedAt
+}
+    `;
 export const RegulerUserFragmentDoc = gql`
     fragment RegulerUser on User {
   id
@@ -293,6 +342,15 @@ export const RegulerUserResponseFragmentDoc = gql`
 }
     ${RegulerUserFragmentDoc}
 ${RegulerErrorFragmentDoc}`;
+export const VoteDocument = gql`
+    mutation Vote($postId: Int!, $value: Int!) {
+  vote(postId: $postId, value: $value)
+}
+    `;
+
+export function useVoteMutation() {
+  return Urql.useMutation<VoteMutation, VoteMutationVariables>(VoteDocument);
+};
 export const ChangePasswordDocument = gql`
     mutation ChangePassword($token: String!, $newPassword: String!) {
   changePassword(token: $token, newPassword: $newPassword) {
@@ -372,25 +430,37 @@ export const MeDocument = gql`
 export function useMeQuery(options: Omit<Urql.UseQueryArgs<MeQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<MeQuery>({ query: MeDocument, ...options });
 };
+export const PostDocument = gql`
+    query Post($postId: Int!) {
+  post(id: $postId) {
+    id
+    title
+    text
+    points
+    voteStatus
+    creator {
+      id
+      username
+    }
+    createdAt
+    updatedAt
+  }
+}
+    `;
+
+export function usePostQuery(options: Omit<Urql.UseQueryArgs<PostQueryVariables>, 'query'> = {}) {
+  return Urql.useQuery<PostQuery>({ query: PostDocument, ...options });
+};
 export const PostsDocument = gql`
     query Posts($limit: Int!, $cursor: String) {
   posts(limit: $limit, cursor: $cursor) {
     hasMore
     posts {
-      id
-      title
-      textSnippet
-      points
-      creator {
-        id
-        username
-      }
-      createdAt
-      updatedAt
+      ...PostSnippet
     }
   }
 }
-    `;
+    ${PostSnippetFragmentDoc}`;
 
 export function usePostsQuery(options: Omit<Urql.UseQueryArgs<PostsQueryVariables>, 'query'> = {}) {
   return Urql.useQuery<PostsQuery>({ query: PostsDocument, ...options });

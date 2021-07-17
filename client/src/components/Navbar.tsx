@@ -24,7 +24,12 @@ const Navbar = () => {
     );
   } else {
     body = (
-      <Flex>
+      <Flex align="center">
+        <NextLink href="/create-post">
+          <Button mr={2} size="sm" variant="solid" colorScheme="green">
+            create post
+          </Button>
+        </NextLink>
         <Box mr={2}>{data?.me.username}</Box>
         <Button
           isLoading={logoutFetching}
@@ -46,10 +51,12 @@ const Navbar = () => {
       bg="whatsapp.500"
       alignItems="center"
     >
-      <Box fontWeight="extrabold" fontSize="3xl" textColor="white">
-        <NextLink href="/"> LiReddit</NextLink>
-      </Box>
-      <Box ml="auto">{body}</Box>
+      <Flex flex={1} maxW={800} m="auto" align="center">
+        <Box fontWeight="extrabold" fontSize="3xl" textColor="white">
+          <NextLink href="/"> LiReddit</NextLink>
+        </Box>
+        <Box ml="auto">{body}</Box>
+      </Flex>
     </Flex>
   );
 };

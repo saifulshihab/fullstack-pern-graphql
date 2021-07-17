@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/createUrqlClient";
-import { usePostsQuery } from "../generated/graphql";
+import { useMeQuery, usePostsQuery } from "../generated/graphql";
 import Layout from "../components/Layout";
 import {
   Box,
@@ -13,6 +13,7 @@ import {
   Spacer,
 } from "@chakra-ui/react";
 import NextLink from "next/link";
+import UpdootSection from "../components/UpdootSection";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -21,11 +22,10 @@ const Index = () => {
   });
   const [{ data, fetching }] = usePostsQuery({ variables });
 
-  console.log(variables);
-
   if (!data && !fetching) {
     return <div>you got no data for some reason!</div>;
   }
+
   return (
     <>
       <Layout varient="reguler">
@@ -34,27 +34,41 @@ const Index = () => {
             Recent Posts
           </Text>
           <Spacer />
-          <NextLink href="/create-post">
-            <Button size="sm" variant="solid" colorScheme="green">
-              create post
-            </Button>
-          </NextLink>
         </Flex>
         {!data ? (
           "Loading..."
         ) : (
           <Stack spacing={8}>
             {data?.posts.posts.map((post) => (
-              <Box key={post.id} p={5} shadow="md" borderWidth="1px">
-                <Flex>
-                  <Heading fontSize="xl">{post.title}</Heading>
-                  <Spacer />
-                  <Text fontSize="xs" fontStyle="italic">
-                    posted by <strong>{post.creator.username}</strong>
-                  </Text>
+              <Flex
+                key={post.id}
+                p={5}
+                shadow="md"
+                borderWidth="1px"
+                rounded="md"
+              >
+                <UpdootSection post={post} />
+                <Flex direction="column" w="full">
+                  <Flex>
+                    <NextLink href="/post/[id]" as={`/post/${post.id}`}>
+                      <Heading
+                        fontSize="xl"
+                        _hover={{ color: "blue" }}
+                        cursor="pointer"
+                      >
+                        {post.title}
+                      </Heading>
+                    </NextLink>
+                    <Spacer />
+                    <Text fontSize="xs" fontStyle="italic">
+                      posted by <strong>{post.creator.username}</strong>
+                    </Text>
+                  </Flex>
+                  <Box>
+                    <Text mt={4}>{post.textSnippet}</Text>
+                  </Box>
                 </Flex>
-                <Text mt={4}>{post.textSnippet}</Text>
-              </Box>
+              </Flex>
             ))}
           </Stack>
         )}
