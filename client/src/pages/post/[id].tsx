@@ -1,19 +1,13 @@
 import React from "react";
-import { useRouter } from "next/router";
-import { usePostQuery } from "../../generated/graphql";
 import { Box, Flex, Heading, Text } from "@chakra-ui/react";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../../utils/createUrqlClient";
 import Layout from "../../components/Layout";
+import { useGetPostFromUrl } from "../../utils/useGetPostFromUrl";
+import { PostEditAndDeleteButtons } from "../../components/PostEditAndDeleteButtons";
 
 const Post = () => {
-  const router = useRouter();
-  const intId =
-    typeof router.query.id === "string" ? parseInt(router.query.id) : -1;
-  const [{ data, fetching, error }] = usePostQuery({
-    pause: intId === -1,
-    variables: { postId: intId },
-  });
+  const [{ data, fetching, error }] = useGetPostFromUrl();
 
   if (fetching) {
     return <Layout varient="reguler">loading...</Layout>;
@@ -33,26 +27,37 @@ const Post = () => {
 
   return (
     <Layout varient="reguler">
-      <Box>
-        <Heading mb={3}>{data.post.title}</Heading>
-        <Text>{data.post.text}</Text>
-        <Flex mt={3} borderTop="gray" fontSize="xs">
-          <Box flex="1">
-            <Text fontStyle="italic">
-              posted at <strong>{data.post.createdAt}</strong>
-            </Text>
-          </Box>
-          <Box flex="1" textAlign="center">
-            <Text fontStyle="italic">
-              by <strong>{data.post.creator.username}</strong>
-            </Text>
-          </Box>
-          <Box flex="1" textAlign="right">
-            <Text fontStyle="italic">
-              <strong>{data.post.points}</strong> points
-            </Text>
-          </Box>
-        </Flex>
+      <Heading mb={3}>{data.post.title}</Heading>
+      <Text>{data.post.text}</Text>
+      <Flex mt={3} borderTop="gray" fontSize="xs">
+        <Box flex="1">
+          <Text fontStyle="italic">
+            posted at{" "}
+            <strong>
+              {new Intl.DateTimeFormat("en-US", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              }).format(data.post.createdAt as any)}
+            </strong>
+          </Text>
+        </Box>
+        <Box flex="1" textAlign="center">
+          <Text fontStyle="italic">
+            by <strong>{data.post.creator.username}</strong>
+          </Text>
+        </Box>
+        <Box flex="1" textAlign="right">
+          <Text fontStyle="italic">
+            <strong>{data.post.points}</strong> points
+          </Text>
+        </Box>
+      </Flex>
+      <Box mt={3}>
+        <PostEditAndDeleteButtons
+          id={data.post.id}
+          creatorId={data.post.creator.id}
+        />
       </Box>
     </Layout>
   );

@@ -1,19 +1,20 @@
-import React, { useState } from "react";
-import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/createUrqlClient";
-import { useMeQuery, usePostsQuery } from "../generated/graphql";
-import Layout from "../components/Layout";
 import {
   Box,
   Button,
+  Flex,
   Heading,
+  Spacer,
   Stack,
   Text,
-  Flex,
-  Spacer,
 } from "@chakra-ui/react";
+import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
+import React, { useState } from "react";
+import Layout from "../components/Layout";
+import { PostEditAndDeleteButtons } from "../components/PostEditAndDeleteButtons";
 import UpdootSection from "../components/UpdootSection";
+import { usePostsQuery } from "../generated/graphql";
+import { createUrqlClient } from "../utils/createUrqlClient";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -39,37 +40,48 @@ const Index = () => {
           "Loading..."
         ) : (
           <Stack spacing={8}>
-            {data?.posts.posts.map((post) => (
-              <Flex
-                key={post.id}
-                p={5}
-                shadow="md"
-                borderWidth="1px"
-                rounded="md"
-              >
-                <UpdootSection post={post} />
-                <Flex direction="column" w="full">
-                  <Flex>
-                    <NextLink href="/post/[id]" as={`/post/${post.id}`}>
-                      <Heading
-                        fontSize="xl"
-                        _hover={{ color: "blue" }}
-                        cursor="pointer"
-                      >
-                        {post.title}
-                      </Heading>
-                    </NextLink>
-                    <Spacer />
-                    <Text fontSize="xs" fontStyle="italic">
-                      posted by <strong>{post.creator.username}</strong>
-                    </Text>
+            {data?.posts.posts.map((post) =>
+              !post ? null : (
+                <Flex
+                  key={post.id}
+                  p={5}
+                  shadow="md"
+                  borderWidth="1px"
+                  rounded="md"
+                >
+                  <UpdootSection post={post} />
+                  <Flex w="full">
+                    <Flex direction="column" flex={1}>
+                      <NextLink href="/post/[id]" as={`/post/${post.id}`}>
+                        <Heading
+                          fontSize="xl"
+                          _hover={{ color: "blue" }}
+                          cursor="pointer"
+                        >
+                          {post.title}
+                        </Heading>
+                      </NextLink>
+                      <Box>
+                        <Text mt={4}>{post.textSnippet}</Text>
+                      </Box>
+                    </Flex>
+                    <Flex
+                      direction="column"
+                      align="center"
+                      justifyContent="center"
+                    >
+                      <PostEditAndDeleteButtons
+                        id={post.id}
+                        creatorId={post.creator.id}
+                      />
+                      <Text fontSize="xs" fontStyle="italic">
+                        posted by <strong>{post.creator.username}</strong>
+                      </Text>
+                    </Flex>
                   </Flex>
-                  <Box>
-                    <Text mt={4}>{post.textSnippet}</Text>
-                  </Box>
                 </Flex>
-              </Flex>
-            ))}
+              )
+            )}
           </Stack>
         )}
         {data && data?.posts.hasMore ? (
