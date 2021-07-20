@@ -4,8 +4,11 @@ import NavLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServerSide } from "../utils/isServerSide";
 import NextLink from "next/link";
+import { useRouter } from "next/router";
 
 const Navbar = () => {
+  const router = useRouter();
+
   const [{ data }] = useMeQuery({ pause: isServerSide() });
   const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
 
@@ -33,7 +36,10 @@ const Navbar = () => {
         <Box mr={2}>{data?.me.username}</Box>
         <Button
           isLoading={logoutFetching}
-          onClick={() => logout()}
+          onClick={async () => {
+            await logout();
+            router.reload();
+          }}
           variant="link"
         >
           logout

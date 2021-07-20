@@ -21,10 +21,15 @@ const Index = () => {
     limit: 15,
     cursor: null as null | string,
   });
-  const [{ data, fetching }] = usePostsQuery({ variables });
+  const [{ data, fetching, error }] = usePostsQuery({ variables });
 
   if (!data && !fetching) {
-    return <div>you got no data for some reason!</div>;
+    return (
+      <div>
+        <div>you got no data for some reason!</div>
+        <Box color="red.500">Error :: {error?.message}</Box>
+      </div>
+    );
   }
 
   return (
@@ -38,6 +43,10 @@ const Index = () => {
         </Flex>
         {!data ? (
           "Loading..."
+        ) : data.posts.posts.length < 1 ? (
+          <Text color="gray.600" m="auto" mt={2}>
+            No Posts Available!!
+          </Text>
         ) : (
           <Stack spacing={8}>
             {data?.posts.posts.map((post) =>
