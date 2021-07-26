@@ -4,13 +4,16 @@ import NavLink from "next/link";
 import { useLogoutMutation, useMeQuery } from "../generated/graphql";
 import { isServerSide } from "../utils/isServerSide";
 import NextLink from "next/link";
-import { useRouter } from "next/router";
+// import { useRouter } from "next/router";
+import { useApolloClient } from "@apollo/client";
 
 const Navbar = () => {
-  const router = useRouter();
+  // const router = useRouter();
 
-  const [{ data }] = useMeQuery({ pause: isServerSide() });
-  const [{ fetching: logoutFetching }, logout] = useLogoutMutation();
+  const apolloClient = useApolloClient();
+
+  const { data } = useMeQuery({ skip: isServerSide() });
+  const [logout, { loading: logoutFetching }] = useLogoutMutation();
 
   let body = null;
 
@@ -38,7 +41,7 @@ const Navbar = () => {
           isLoading={logoutFetching}
           onClick={async () => {
             await logout();
-            router.reload();
+            await apolloClient.resetStore();
           }}
           variant="link"
         >

@@ -21,7 +21,7 @@ import { createUpdootLoader } from "./utils/createUpdootLoader";
 
 declare module "express-session" {
   interface SessionData {
-    userId: any;
+    userId?: any;
   }
 }
 

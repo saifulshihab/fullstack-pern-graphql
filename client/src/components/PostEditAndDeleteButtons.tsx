@@ -11,8 +11,8 @@ interface PostEditAndDeleteButtonsProps {
 
 export const PostEditAndDeleteButtons: React.FC<PostEditAndDeleteButtonsProps> =
   ({ id, creatorId }) => {
-    const [{ data: meData }] = useMeQuery();
-    const [, deletePost] = useDeletePostMutation();
+    const { data: meData } = useMeQuery();
+    const [deletePost] = useDeletePostMutation();
 
     if (meData?.me?.id !== creatorId) {
       return null;
@@ -26,7 +26,14 @@ export const PostEditAndDeleteButtons: React.FC<PostEditAndDeleteButtonsProps> =
           size="sm"
           mr={2}
           colorScheme="pink"
-          onClick={() => deletePost({ id })}
+          onClick={() =>
+            deletePost({
+              variables: { id },
+              update: (cache) => {
+                cache.evict({ id: "Post:" + id });
+              },
+            })
+          }
         />
         <NextLink href="/post/edit/[id]" as={`/post/edit/${id}`}>
           <IconButton

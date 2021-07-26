@@ -18,7 +18,8 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "../src/utils/createUserLoader.ts"
+    "../src/utils/createUserLoader.ts",
+    "src/utils/createWithApollo.tsx"
   ],
   "exclude": ["node_modules"]
 }

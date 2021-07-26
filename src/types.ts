@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Request, Response } from "express";
 import { Redis } from "ioredis";
 import { createUpdootLoader } from "./utils/createUpdootLoader";
 import { createUserLoader } from "./utils/createUserLoader";

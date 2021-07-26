@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Box,
   Button,
@@ -7,23 +8,23 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
-import React, { useState } from "react";
 import Layout from "../components/Layout";
 import { PostEditAndDeleteButtons } from "../components/PostEditAndDeleteButtons";
 import UpdootSection from "../components/UpdootSection";
 import { usePostsQuery } from "../generated/graphql";
-import { createUrqlClient } from "../utils/createUrqlClient";
+import { withApollo } from "../utils/withApollo";
 
 const Index = () => {
-  const [variables, setVariables] = useState({
-    limit: 15,
-    cursor: null as null | string,
+  const { data, loading, error, fetchMore } = usePostsQuery({
+    variables: {
+      limit: 15,
+      cursor: null as null | string,
+    },
+    notifyOnNetworkStatusChange: true,
   });
-  const [{ data, fetching, error }] = usePostsQuery({ variables });
 
-  if (!data && !fetching) {
+  if (!data && !loading) {
     return (
       <div>
         <div>you got no data for some reason!</div>
@@ -42,7 +43,7 @@ const Index = () => {
           <Spacer />
         </Flex>
         {!data ? (
-          "Loading..."
+          <Text> Loading... </Text>
         ) : data.posts.posts.length < 1 ? (
           <Text color="gray.600" m="auto" mt={2}>
             No Posts Available!!
@@ -96,14 +97,35 @@ const Index = () => {
         {data && data?.posts.hasMore ? (
           <Flex alignItems="center" justifyContent="center" my={3}>
             <Button
-              isLoading={fetching}
+              isLoading={loading}
               variant="solid"
               colorScheme="messenger"
               onClick={() => {
-                setVariables({
-                  limit: variables.limit,
-                  cursor:
-                    data?.posts.posts[data?.posts.posts.length - 1].createdAt,
+                fetchMore({
+                  variables: {
+                    cursor:
+                      data?.posts.posts[data?.posts.posts.length - 1].createdAt,
+                  },
+                  // updateQuery: (
+                  //   previousValues,
+                  //   { fetchMoreResult }
+                  // ): PostsQuery => {
+                  //   if (!fetchMoreResult) {
+                  //     return previousValues as PostsQuery;
+                  //   }
+
+                  //   return {
+                  //     __typename: "Query",
+                  //     posts: {
+                  //       __typename: "PaginatedPosts",
+                  //       hasMore: (fetchMoreResult as PostsQuery).posts.hasMore,
+                  //       posts: [
+                  //         ...(previousValues as PostsQuery).posts.posts,
+                  //         ...(fetchMoreResult as PostsQuery).posts.posts,
+                  //       ],
+                  //     },
+                  //   };
+                  // },
                 });
               }}
             >
@@ -116,4 +138,4 @@ const Index = () => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Index);
+export default withApollo({ ssr: true })(Index);
